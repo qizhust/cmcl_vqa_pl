@@ -1,4 +1,4 @@
-# Cross-Modal Contrastive Learning for Robust VQA
+# Cross-Modal Contrastive Learning for Robust Reasoning in VQA
 
 This repo is an implementation upon [METER](https://github.com/zdou0830/METER) backbone with PyTorch Lightning. [Here](https://github.com/qizhust/cmcl_vqa) is an implementation in PyTorch.
 
