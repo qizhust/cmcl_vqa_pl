@@ -39,7 +39,7 @@ class MTDataModule(LightningDataModule):
         self.tokenizer = self.dms[0].tokenizer
 
         self.collate = functools.partial(
-            self.dms[0].train_dataset.collate, mlm_collator=self.dms[0].mlm_collator, pos_model=self.dms[0].posmodel
+            self.dms[0].train_dataset.collate, mlm_collator=self.dms[0].mlm_collator
         )
 
         if self.dist:

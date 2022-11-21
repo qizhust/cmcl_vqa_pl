@@ -44,7 +44,6 @@ class BaseDataModule(LightningDataModule):
         self.draw_false_image = _config["draw_false_image"]
         self.draw_false_text = _config["draw_false_text"]
         self.image_only = _config["image_only"]
-        self.filter_non_sem = _config["filter_non_sem"]
 
         self.train_transform_keys = (
             ["default_train"]
@@ -60,7 +59,6 @@ class BaseDataModule(LightningDataModule):
 
         tokenizer = _config["tokenizer"]
         self.tokenizer = get_pretrained_tokenizer(tokenizer)
-        self.posmodel = AutoModelForTokenClassification.from_pretrained(_config["pos_dir"])
         self.vocab_size = self.tokenizer.vocab_size
 
         collator = (
@@ -93,7 +91,6 @@ class BaseDataModule(LightningDataModule):
             draw_false_text=self.draw_false_text,
             image_only=self.image_only,
             tokenizer=self.tokenizer,
-            filter_non_sem=self.filter_non_sem
         )
 
     def set_val_dataset(self):
@@ -107,7 +104,6 @@ class BaseDataModule(LightningDataModule):
             draw_false_text=self.draw_false_text,
             image_only=self.image_only,
             tokenizer=self.tokenizer,
-            filter_non_sem=self.filter_non_sem
         )
 
         if hasattr(self, "dataset_cls_no_false"):
@@ -121,7 +117,6 @@ class BaseDataModule(LightningDataModule):
                 draw_false_text=0,
                 image_only=self.image_only,
                 tokenizer=self.tokenizer,
-                filter_non_sem=self.filter_non_sem
             )
 
     def make_no_false_val_dset(self, image_only=False):
@@ -135,7 +130,6 @@ class BaseDataModule(LightningDataModule):
             draw_false_text=0,
             image_only=image_only,
             tokenizer=self.tokenizer,
-            filter_non_sem=self.filter_non_sem
         )
 
     def set_test_dataset(self):
@@ -149,7 +143,6 @@ class BaseDataModule(LightningDataModule):
             draw_false_text=self.draw_false_text,
             image_only=self.image_only,
             tokenizer=self.tokenizer,
-            filter_non_sem=self.filter_non_sem
         )
 
     def setup(self, stage):

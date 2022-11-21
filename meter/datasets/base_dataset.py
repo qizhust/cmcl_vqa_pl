@@ -8,29 +8,6 @@ from PIL import Image
 from ..transforms import keys_to_transforms
 
 
-def get_unchange_index(flat_encodings, pos_model):
-    input_ids = torch.cat([torch.tensor(x['input_ids']).unsqueeze(0) for x in flat_encodings], 0)
-    att_mask = torch.cat([torch.tensor(x['attention_mask']).unsqueeze(0) for x in flat_encodings], 0)
-
-    no_sem_set = [1, 2, 3, 7, 8, 16, 19, 23, 25, 28, 29, 30, 
-                  32, 33, 46, 47, 50, 52, 53, 63, 64, 65, 66, 
-                  67, 68, 89, 90, 91, 92, 93, 94, 95, 104, 107, 
-                  111, 113, 116, 117, 118, 120, 121, 134, 135, 
-                  138, 140, 141, 151, 152, 153, 154, 155, 156, 
-                  177, 178, 179, 180, 181, 182, 187, 188, 189, 
-                  193, 194, 195, 196, 197, 198, 199, 200, 206, 207]
-
-    logits = pos_model(input_ids, att_mask).logits
-    pos_class = logits.argmax(-1)
-
-    unchange_index = torch.zeros_like(pos_class, dtype=bool)
-
-    for num in no_sem_set:
-        unchange_index[pos_class==num] = True
-
-    return unchange_index, input_ids, att_mask
-
-
 class BaseDataset(torch.utils.data.Dataset):
     def __init__(
         self,
@@ -44,8 +21,7 @@ class BaseDataset(torch.utils.data.Dataset):
         draw_false_image=0,
         draw_false_text=0,
         image_only=False,
-        tokenizer=None,
-        filter_non_sem=False
+        tokenizer=None
     ):
         """
         data_dir : where dataset file *.arrow lives; existence should be guaranteed via DataModule.prepare_data
@@ -73,7 +49,6 @@ class BaseDataset(torch.utils.data.Dataset):
         self.draw_false_text = draw_false_text
         self.image_only = image_only
         self.data_dir = data_dir
-        self.filter_non_sem = filter_non_sem
 
         if len(names) != 0:
             tables = [
@@ -211,7 +186,7 @@ class BaseDataset(torch.utils.data.Dataset):
                 index = random.randint(0, len(self.index_mapper) - 1)
         return ret
 
-    def collate(self, batch, mlm_collator, pos_model):
+    def collate(self, batch, mlm_collator):
         batch_size = len(batch)
         keys = set([key for b in batch for key in b.keys()])
         dict_batch = {k: [dic[k] if k in dic else None for dic in batch] for k in keys}
@@ -260,8 +235,6 @@ class BaseDataset(torch.utils.data.Dataset):
             # draw_text_len = len(encodings)
             flatten_encodings = [e for encoding in encodings for e in encoding]
 
-            if self.filter_non_sem:
-                unchange_idx, input_ids, att_mask = get_unchange_index(flatten_encodings, pos_model)
 
             flatten_mlms = mlm_collator(flatten_encodings)
 
@@ -275,11 +248,6 @@ class BaseDataset(torch.utils.data.Dataset):
                     flatten_mlms["input_ids"][batch_size * (i) : batch_size * (i + 1)],
                     flatten_mlms["labels"][batch_size * (i) : batch_size * (i + 1)],
                 )
-
-                if self.filter_non_sem:
-                    # print('Filtering non-semantic masking...')
-                    curr_unchange_idx = unchange_idx[batch_size * (i) : batch_size * (i + 1)]
-                    mlm_ids[curr_unchange_idx] = input_ids[curr_unchange_idx]
 
                 input_ids = torch.zeros_like(mlm_ids)
                 attention_mask = torch.zeros_like(mlm_ids)

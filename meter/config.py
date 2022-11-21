@@ -45,7 +45,6 @@ def config():
     whole_word_masking = False # note that whole_word_masking does not work for RoBERTa
     mlm_prob = 0.15
     draw_false_text = 0
-    filter_non_sem = False
 
     # Transformer Setting
     num_top_layer = 6
@@ -82,9 +81,8 @@ def config():
     # below params varies with the environment
     data_root = "../../../datasets/arrows"
     log_dir = "./result"
-    offline_dir = "../trans_models/"
-    pos_dir = offline_dir + "roberta-base-english-upos"
-    vit_dir = offline_dir + vit
+    # offline_dir = "../trans_models/"
+    # vit_dir = offline_dir + vit
     per_gpu_batchsize = 0  # you should define this manually with per_gpu_batch_size=#
     num_gpus = 8
     num_nodes = 1
